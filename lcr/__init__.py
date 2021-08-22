@@ -161,11 +161,10 @@ class API():
         return result.json()
 
 
-    def members_alt(self):
-        _LOGGER.info("Getting member list")
-        request = {'url': 'https://{}/services/umlu/report/member-list'.format(LCR_DOMAIN),
-                   'params': {'lang': 'eng',
-                              'unitNumber': self.unit_number}}
+    def members_with_callings_list(self):
+        _LOGGER.info("Getting callings for all organizations")
+        request = {'url': 'https://{}/services/report/members-with-callings'.format(LCR_DOMAIN),
+                   'params': {'lang': 'eng'}}
 
         result = self._make_request(request)
         return result.json()
@@ -194,6 +193,7 @@ class API():
 
         result = self._make_request(request)
         return result.json()
+
 
     def recommend_status(self):
         """
