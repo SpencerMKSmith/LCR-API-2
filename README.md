@@ -8,7 +8,8 @@ The following calls are supported, which correspond to a page in LCR:
 - Members moved out
 - Members moved in
 - Member list
-- Calling list
+- Calling list by organization
+- Members with callings list
 - Recommend Status
 
 There is one additional call supported:
