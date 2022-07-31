@@ -1,5 +1,7 @@
 # LCR API
 
+Forked from: https://github.com/philipbl/LCR-API.  Updated in PIP as lcr-api-2 to pull the new version that works.
+
 A Python API for Leader and Clerk Resources for the LDS Church. I've only tested it with Python 3.5+.
 
 The following calls are supported, which correspond to a page in LCR:
@@ -27,7 +29,7 @@ This code is rough around the edges. I don't handle any cases where a person usi
 To install, run
 
 ```
-pip3 install lcr-api
+pip3 install lcr-api-2
 ```
 
 ## Usage
