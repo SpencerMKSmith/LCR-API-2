@@ -27,6 +27,7 @@ setup(
     author_email='spencermksmith@gmail.com',
     description='An API for the LDS churches Leader and Clerk Resources (LCR),',
     long_description=long_description,
+    long_description_content_type='text/markdown',
     url='https://github.com/SpencerMKSmith/LCR-API-2',
     packages=PACKAGES,
     include_package_data=True,
