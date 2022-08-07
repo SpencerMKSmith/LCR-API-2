@@ -6,17 +6,16 @@ A Python API for Leader and Clerk Resources for the LDS Church. I've only tested
 
 The following calls are supported, which correspond to a page in LCR:
 
-- Birthday list
-- Members moved out
-- Members moved in
-- Member list
-- Calling list by organization
-- Members with callings list
-- Recommend Status
-
-There is one additional call supported:
-
-- Individual photo – Gets the photo for an individual. This is the same call that LCR uses to show a picture when you go to a member's page.
+- Birthday list (`birthday_list`)
+- Members moved out (`members_moved_out`)
+- Members moved in (`members_moved_in`)
+- Member list (`member_list`)
+- Calling list by organization (`callings`)
+- Members with callings list (`members_with_callings_list`)
+- Recommend Status (`recommend_status`)
+- Individual Photo (`individual_photo`)
+- Ministering List (`ministering`)
+- Access Table (`access_table`)
 
 More calls will be supported as I have time. Pull requests are welcomed!
 
