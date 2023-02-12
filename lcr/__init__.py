@@ -69,7 +69,7 @@ class API():
         # Wait until the page is loaded
         WebDriverWait(self.driver, TIMEOUT).until(
                 ec.presence_of_element_located(
-                    (By.CSS_SELECTOR, "input.eEwVDs")
+                    (By.CSS_SELECTOR, "churchofjesuschrist-eden-normalize")
                     )
                 )
 
@@ -211,3 +211,49 @@ class API():
                 }
         result = self._make_request(request)
         return result.json()
+
+    def aggregated_member_data():
+        """
+        Returns list of members including recommend and calling data.  Returned using the MemberData object.
+        """
+
+        print("Getting entire member list")
+        allMemberList = self.member_list()
+
+        allMemberIdToMemberMap = {member['legacyCmisId']: member for member in allMemberList}
+        print("Pulling members with calling list")
+        membersWithCallingMap = {member['id']: member for member in self.members_with_callings_list()}
+        print("Pulling recommend status list")
+        recommendStatusMap = {member['id']: member for member in self.recommend_status()}
+
+        memberDataObjectList = []
+        for member in allMemberList:
+            legacyMemberId = member['legacyCmisId']
+            firstName = member['nameFormats'].get('givenPreferredLocal', "").split(" ", 1)[0]
+            lastName = member['nameFormats'].get('familyPreferredLocal') or ""
+            fullName = firstName + " " + lastName
+            age = member['age']
+            callings = membersWithCallingMap.get(legacyMemberId, {}).get('position', "")
+            recommendStatus = recommendStatusMap.get(legacyMemberId, {}).get('status', "")
+            memberDataObject = MemberData(legacyMemberId, fullName, age, callings, recommendStatus)
+            memberDataObjectList.append(memberDataObject)
+
+    def getReadableName(name):
+        """
+        Helper method to take names like "Smith, Joseph A." and convert to "Joseph Smith"
+        """
+        splitBySpaces = name.replace(',', '').split(" ")            # Remove the comma and split by spaces
+        readableName = splitBySpaces[1] + " " + splitBySpaces[0]    # Keep only the first and last names
+        return readableName
+
+class MemberData():
+    def __init__(self, fullName, age, callings, recommendStatus, legacyMemberId):
+        self.fullName = fullName
+        self.age = age
+        self.callings = callings
+        self.recommendStatus = recommendStatus
+        self.legacyMemberId = legacyMemberId
+
+    def __iter__(self):
+        return iter([self.fullName, self.age, self.callings, self.recommendStatus, self.legacyMemberId])
+
