@@ -4,6 +4,8 @@ import re
 import json
 import logging
 import requests
+import time
+
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -18,7 +20,6 @@ LCR_DOMAIN = f"lcr.{HOST}"
 CHROME_OPTIONS = webdriver.chrome.options.Options()
 CHROME_OPTIONS.add_argument("--headless")
 TIMEOUT = 10
-
 
 if _LOGGER.getEffectiveLevel() <= logging.DEBUG:
     import http.client as http_client
@@ -48,6 +49,8 @@ class API():
         # Navigate to the login page
         self.driver.get(f"https://{LCR_DOMAIN}")
 
+        _LOGGER.info("Entering username")
+
         # Enter the username
         login_input = WebDriverWait(self.driver, TIMEOUT).until(
                         ec.presence_of_element_located(
@@ -56,6 +59,8 @@ class API():
                         )
         login_input.send_keys(user)
         login_input.submit()
+
+        _LOGGER.info("Entering password")
 
         # Enter password
         password_input = WebDriverWait(self.driver, TIMEOUT).until(
@@ -69,17 +74,19 @@ class API():
         # Wait until the page is loaded
         WebDriverWait(self.driver, TIMEOUT).until(
                 ec.presence_of_element_located(
-                    (By.CSS_SELECTOR, "churchofjesuschrist-eden-normalize")
+                    (By.CSS_SELECTOR, "platform-header.PFshowHeader")
                     )
                 )
+        
+        time.sleep(5) # Unable to find a better item above to wait on, but the above still needs some of the page to load.
 
-        # Get authState parameter.
+        _LOGGER.info("Successfully logged in, getting cookies")
+
+        # Get authState parameter.  Copy all cookies from the session rather than looking for a specific one.
         cookies = self.driver.get_cookies()
-        potential_cookie = [c for c in cookies if "ChurchSSO" in c['name']]
-        real_cookie = next(iter(potential_cookie))
-        churchcookie = real_cookie['value']
+        for cookie in cookies:
+            self.session.cookies.set(cookie['name'], cookie['value'])
 
-        self.session.cookies['ChurchSSO'] = churchcookie
         self.driver.close()
         self.driver.quit()
 
@@ -95,7 +102,7 @@ class API():
     def birthday_list(self, month, months=1):
         _LOGGER.info("Getting birthday list")
         request = {
-                'url': 'https://{}/services/report/birthday-list'.format(
+                'url': 'https://{}/api/report/birthday-list'.format(
                     LCR_DOMAIN
                     ),
                 'params': {
@@ -110,7 +117,7 @@ class API():
 
     def members_moved_in(self, months):
         _LOGGER.info("Getting members moved in")
-        request = {'url': 'https://{}/services/report/members-moved-in/unit/{}/{}'.format(LCR_DOMAIN,
+        request = {'url': 'https://{}/api/report/members-moved-in/unit/{}/{}'.format(LCR_DOMAIN,
                                                                                                   self.unit_number,
                                                                                                   months),
                    'params': {'lang': 'eng'}}
@@ -121,7 +128,7 @@ class API():
 
     def members_moved_out(self, months):
         _LOGGER.info("Getting members moved out")
-        request = {'url': 'https://{}/services/report/members-moved-out/unit/{}/{}'.format(LCR_DOMAIN,
+        request = {'url': 'https://{}/api/report/members-moved-out/unit/{}/{}'.format(LCR_DOMAIN,
                                                                                                    self.unit_number,
                                                                                                    months),
                    'params': {'lang': 'eng'}}
@@ -132,7 +139,7 @@ class API():
 
     def member_list(self):
         _LOGGER.info("Getting member list")
-        request = {'url': 'https://{}/services/umlu/report/member-list'.format(LCR_DOMAIN),
+        request = {'url': 'https://{}/api/umlu/report/member-list'.format(LCR_DOMAIN),
                    'params': {'lang': 'eng',
                               'unitNumber': self.unit_number}}
 
@@ -156,7 +163,7 @@ class API():
 
     def callings(self):
         _LOGGER.info("Getting callings for all organizations")
-        request = {'url': 'https://{}/services/orgs/sub-orgs-with-callings'.format(LCR_DOMAIN),
+        request = {'url': 'https://{}/api/orgs/sub-orgs-with-callings'.format(LCR_DOMAIN),
                    'params': {'lang': 'eng'}}
 
         result = self._make_request(request)
@@ -165,7 +172,7 @@ class API():
 
     def members_with_callings_list(self):
         _LOGGER.info("Getting callings for all organizations")
-        request = {'url': 'https://{}/services/report/members-with-callings'.format(LCR_DOMAIN),
+        request = {'url': 'https://{}/api/report/members-with-callings'.format(LCR_DOMAIN),
                    'params': {'lang': 'eng'}}
 
         result = self._make_request(request)
@@ -177,7 +184,7 @@ class API():
         API parameters known to be accepted are lang type unitNumber and quarter.
         """
         _LOGGER.info("Getting ministering data")
-        request = {'url': 'https://{}/services/umlu/v1/ministering/data-full'.format(LCR_DOMAIN),
+        request = {'url': 'https://{}/api/umlu/v1/ministering/data-full'.format(LCR_DOMAIN),
                    'params': {'lang': 'eng',
                               'unitNumber': self.unit_number}}
 
@@ -190,7 +197,7 @@ class API():
         Once the users role id is known this table could be checked to selectively enable or disable methods for API endpoints.
         """
         _LOGGER.info("Getting info for data access")
-        request = {'url': 'https://{}/services/access-table'.format(LCR_DOMAIN),
+        request = {'url': 'https://{}/api/access-table'.format(LCR_DOMAIN),
                    'params': {'lang': 'eng'}}
 
         result = self._make_request(request)
@@ -203,7 +210,7 @@ class API():
         """
         _LOGGER.info("Getting recommend status")
         request = {
-                'url': 'https://{}/services/recommend/recommend-status'.format(LCR_DOMAIN),
+                'url': 'https://{}/api/recommend/recommend-status'.format(LCR_DOMAIN),
                 'params': {
                     'lang': 'eng',
                     'unitNumber': self.unit_number
@@ -212,39 +219,6 @@ class API():
         result = self._make_request(request)
         return result.json()
 
-    def aggregated_member_data():
-        """
-        Returns list of members including recommend and calling data.  Returned using the MemberData object.
-        """
-
-        print("Getting entire member list")
-        allMemberList = self.member_list()
-
-        allMemberIdToMemberMap = {member['legacyCmisId']: member for member in allMemberList}
-        print("Pulling members with calling list")
-        membersWithCallingMap = {member['id']: member for member in self.members_with_callings_list()}
-        print("Pulling recommend status list")
-        recommendStatusMap = {member['id']: member for member in self.recommend_status()}
-
-        memberDataObjectList = []
-        for member in allMemberList:
-            legacyMemberId = member['legacyCmisId']
-            firstName = member['nameFormats'].get('givenPreferredLocal', "").split(" ", 1)[0]
-            lastName = member['nameFormats'].get('familyPreferredLocal') or ""
-            fullName = firstName + " " + lastName
-            age = member['age']
-            callings = membersWithCallingMap.get(legacyMemberId, {}).get('position', "")
-            recommendStatus = recommendStatusMap.get(legacyMemberId, {}).get('status', "")
-            memberDataObject = MemberData(legacyMemberId, fullName, age, callings, recommendStatus)
-            memberDataObjectList.append(memberDataObject)
-
-    def getReadableName(name):
-        """
-        Helper method to take names like "Smith, Joseph A." and convert to "Joseph Smith"
-        """
-        splitBySpaces = name.replace(',', '').split(" ")            # Remove the comma and split by spaces
-        readableName = splitBySpaces[1] + " " + splitBySpaces[0]    # Keep only the first and last names
-        return readableName
 
 class MemberData():
     def __init__(self, fullName, age, callings, recommendStatus, legacyMemberId):
