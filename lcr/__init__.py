@@ -54,7 +54,7 @@ class API():
         # Enter the username
         login_input = WebDriverWait(self.driver, TIMEOUT).until(
                         ec.presence_of_element_located(
-                            (By.CSS_SELECTOR, "input#okta-signin-username")
+                            (By.XPATH, "//input[@autocomplete='username']") # Have to use another field, they keep changing the ID
                             )
                         )
         login_input.send_keys(user)
