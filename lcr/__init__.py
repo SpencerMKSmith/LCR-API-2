@@ -221,13 +221,13 @@ class API():
 
 
 class MemberData():
-    def __init__(self, fullName, age, callings, recommendStatus, legacyMemberId):
+    def __init__(self, fullName, sex, birthdate, callings, recommendStatus, legacyMemberId):
         self.fullName = fullName
-        self.age = age
+        self.sex = sex
+        self.birthdate = birthdate
         self.callings = callings
         self.recommendStatus = recommendStatus
         self.legacyMemberId = legacyMemberId
 
     def __iter__(self):
-        return iter([self.fullName, self.age, self.callings, self.recommendStatus, self.legacyMemberId])
-
+        return iter([self.fullName, self.sex, self.birthdate, self.callings, self.recommendStatus, self.legacyMemberId])
