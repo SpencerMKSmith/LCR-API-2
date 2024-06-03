@@ -101,7 +101,7 @@ class API():
         member_id is not the same as Mrn
         """
         _LOGGER.info("Getting photo for {}".format(member_id))
-        request = {'url': 'https://{}/individual-photo/{}'.format(LCR_DOMAIN, member_id),
+        request = {'url': 'https://{}/api/avatar/{}/MEDIUM'.format(LCR_DOMAIN, member_id),
                    'params': {'lang': 'eng',
                               'status': 'APPROVED'}}
 
