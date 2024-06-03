@@ -218,7 +218,7 @@ class API():
         return result.json()
     
 
-    def accesible_units(self):
+    def accessible_units(self):
         _LOGGER.info("Getting accessible units")
         request = {
             'url': 'https://{}/api/accessible-units'.format(FFE_DOMAIN),
