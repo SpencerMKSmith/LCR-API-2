@@ -168,6 +168,18 @@ class API():
                 }
         result = self._make_request(request)
         return result.json()
+    
+
+    def unit_details(self, unit_number):
+        _LOGGER.info("Getting unit details")
+        request = {
+                'url': 'https://{}/api/cdol/details/unit/{}'.format(LCR_DOMAIN, unit_number),
+                'params': {
+                    'lang': 'eng'
+                    }
+                }
+        result = self._make_request(request)
+        return result.json()
 
 
 class MemberData():
