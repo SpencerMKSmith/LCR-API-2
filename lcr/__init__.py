@@ -237,6 +237,18 @@ class API():
         }
         result = self._make_request(request)
         return result.json()
+    
+
+    def financial_participant_list(self, orgId):
+        graphql_body = {"operationName":"orgParticipantsList","variables":{"criteria":{"orgId":orgId,"includeChildUnitParticipants":False,"includeInactive":True}},"query":"query orgParticipantsList($criteria: OrgParticipantListCriteria!) {\n  orgParticipantsList(criteria: $criteria) {\n    id\n    maxDonationDate\n    maxPaymentDate\n    maxRecipientDate\n    participant {\n      id\n      birthDate\n      gender\n      membershipId\n      isMember\n      isDonor\n      isPayee\n      isRecipient\n      taxId\n      address {\n        composed\n        __typename\n      }\n      emailAddress\n      names {\n        localUnitDisplayName\n        __typename\n      }\n      org {\n        id\n        name\n        localName1\n        parent {\n          id\n          __typename\n        }\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n"}
+
+        _LOGGER.info("Getting financial participant list")
+        request = {
+            'url': 'https://{}/api/graphql'.format(FFE_DOMAIN),
+            'json': graphql_body
+        }
+        result = self._make_request(request)
+        return result.json()
 
 
 class MemberData():
