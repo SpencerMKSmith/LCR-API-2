@@ -7,6 +7,9 @@ from selenium.webdriver.support import expected_conditions as ec
 from webdriver_manager.chrome import ChromeDriverManager
 
 _LOGGER = logging.getLogger(__name__)
+HOST = "churchofjesuschrist.org"
+BETA_HOST = f"beta.{HOST}"
+LCR_DOMAIN = f"lcr.{HOST}"
 CHROME_OPTIONS = webdriver.chrome.options.Options()
 CHROME_OPTIONS.add_argument("--headless")
 TIMEOUT = 10
