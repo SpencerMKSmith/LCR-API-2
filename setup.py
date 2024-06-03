@@ -2,7 +2,7 @@
 import os
 from setuptools import setup, find_packages
 
-VERSION = 'v0.5.9'
+VERSION = 'v0.5.10'
 PACKAGE_NAME = 'lcr-api-2'
 HERE = os.path.abspath(os.path.dirname(__file__))
 DOWNLOAD_URL = ('https://github.com/SpencerMKSmith/LCR-API-2/archive/'
@@ -12,6 +12,9 @@ PACKAGES = find_packages(exclude=['tests', 'tests.*'])
 
 REQUIRES = [
     'requests>=2,<3',
+    'selenium==4.8.0',
+    'setuptools==60.10.0',
+    'webdriver_manager==3.8.3',
 ]
 
 here = os.path.abspath(os.path.dirname(__file__))
