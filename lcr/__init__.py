@@ -135,7 +135,8 @@ class API():
         _LOGGER.info("Getting ministering data")
         request = {'url': 'https://{}/api/umlu/v1/ministering/data-full'.format(LCR_DOMAIN),
                    'params': {'lang': 'eng',
-                              'unitNumber': self.unit_number}}
+                              'unitNumber': self.unit_number,
+                             'type': 'ALL'}}
 
         result = self._make_request(request)
         return result.json()
