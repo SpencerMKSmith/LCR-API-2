@@ -107,6 +107,17 @@ class API():
 
         result = self._make_request(request)
         return result.json()
+    
+
+    def member_profile(self, member_id):
+        _LOGGER.info("Getting member profile")
+        request = {
+            'url': 'https://{}/api/records/member-profile/service/{}'.format(LCR_DOMAIN, member_id),
+            'params': {'lang': 'eng'}
+        }
+
+        result = self._make_request(request)
+        return result.json()
 
 
     def individual_photo(self, member_id):
