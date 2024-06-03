@@ -7,19 +7,11 @@ import requests
 import time
 
 
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as ec
-from webdriver_manager.chrome import ChromeDriverManager
 
 _LOGGER = logging.getLogger(__name__)
 HOST = "churchofjesuschrist.org"
 BETA_HOST = f"beta.{HOST}"
 LCR_DOMAIN = f"lcr.{HOST}"
-CHROME_OPTIONS = webdriver.chrome.options.Options()
-CHROME_OPTIONS.add_argument("--headless")
-TIMEOUT = 10
 
 if _LOGGER.getEffectiveLevel() <= logging.DEBUG:
     import http.client as http_client
@@ -33,62 +25,19 @@ class InvalidCredentialsError(Exception):
 class API():
     def __init__(
             self, username, password, unit_number, beta=False,
-            driver = webdriver.Chrome(ChromeDriverManager().install(), options=CHROME_OPTIONS)):
-        driver
+            driver=None, cookies=None):
         self.unit_number = unit_number
         self.session = requests.Session()
         self.driver = driver
         self.beta = beta
         self.host = BETA_HOST if beta else HOST
 
-        self._login(username, password)
-
-    def _login(self, user, password):
-        _LOGGER.info("Logging in")
-
-        # Navigate to the login page
-        self.driver.get(f"https://{LCR_DOMAIN}")
-
-        _LOGGER.info("Entering username")
-
-        # Enter the username
-        login_input = WebDriverWait(self.driver, TIMEOUT).until(
-                        ec.presence_of_element_located(
-                            (By.XPATH, "//input[@autocomplete='username']") # Have to use another field, they keep changing the ID
-                            )
-                        )
-        login_input.send_keys(user)
-        login_input.submit()
-
-        _LOGGER.info("Entering password")
-
-        # Enter password
-        password_input = WebDriverWait(self.driver, TIMEOUT).until(
-                ec.presence_of_element_located(
-                    (By.CSS_SELECTOR, "input.password-with-toggle")
-                    )
-                )
-        password_input.send_keys(password)
-        password_input.submit()
-
-        # Wait until the page is loaded
-        WebDriverWait(self.driver, TIMEOUT).until(
-                ec.presence_of_element_located(
-                    (By.CSS_SELECTOR, "platform-header.PFshowHeader")
-                    )
-                )
-        
-        time.sleep(5) # Unable to find a better item above to wait on, but the above still needs some of the page to load.
-
-        _LOGGER.info("Successfully logged in, getting cookies")
-
-        # Get authState parameter.  Copy all cookies from the session rather than looking for a specific one.
-        cookies = self.driver.get_cookies()
-        for cookie in cookies:
-            self.session.cookies.set(cookie['name'], cookie['value'])
-
-        self.driver.close()
-        self.driver.quit()
+        if cookies is None:
+            from .selenium_login import login
+            login(self, username, password)
+        else:
+            for cookie in cookies:
+                self.session.cookies.set(cookie['name'], cookie['value'])
 
     def _make_request(self, request):
         if self.beta:
