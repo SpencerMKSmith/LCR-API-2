@@ -10,56 +10,79 @@ _LOGGER = logging.getLogger(__name__)
 HOST = "churchofjesuschrist.org"
 BETA_HOST = f"beta.{HOST}"
 LCR_DOMAIN = f"lcr.{HOST}"
+FFE_DOMAIN = f"lcrffe.{HOST}"
 CHROME_OPTIONS = webdriver.chrome.options.Options()
 CHROME_OPTIONS.add_argument("--headless")
 TIMEOUT = 10
 
 def login(api, user, password):
-        _LOGGER.info("Logging in")
+    _LOGGER.info("Logging in")
 
-        if api.driver is None:
-          api.driver =webdriver.Chrome(ChromeDriverManager().install(), options=CHROME_OPTIONS)
+    if api.driver is None:
+        api.driver = webdriver.Chrome(ChromeDriverManager().install(), options=CHROME_OPTIONS)
 
-        # Navigate to the login page
-        api.driver.get(f"https://{LCR_DOMAIN}")
+    # Navigate to the login page
+    api.driver.get(f"https://{LCR_DOMAIN}")
 
-        _LOGGER.info("Entering username")
+    _LOGGER.info("Entering username")
 
-        # Enter the username
-        login_input = WebDriverWait(api.driver, TIMEOUT).until(
-                        ec.presence_of_element_located(
-                            (By.XPATH, "//input[@autocomplete='username']") # Have to use another field, they keep changing the ID
-                            )
+    # Enter the username
+    login_input = WebDriverWait(api.driver, TIMEOUT).until(
+                    ec.presence_of_element_located(
+                        (By.XPATH, "//input[@autocomplete='username']") # Have to use another field, they keep changing the ID
                         )
-        login_input.send_keys(user)
-        login_input.submit()
-
-        _LOGGER.info("Entering password")
-
-        # Enter password
-        password_input = WebDriverWait(api.driver, TIMEOUT).until(
-                ec.presence_of_element_located(
-                    (By.CSS_SELECTOR, "input.password-with-toggle")
                     )
+    login_input.send_keys(user)
+    login_input.submit()
+
+    _LOGGER.info("Entering password")
+
+    # Enter password
+    password_input = WebDriverWait(api.driver, TIMEOUT).until(
+            ec.presence_of_element_located(
+                (By.CSS_SELECTOR, "input.password-with-toggle")
                 )
-        password_input.send_keys(password)
-        password_input.submit()
+            )
+    password_input.send_keys(password)
+    password_input.submit()
 
-        # Wait until the page is loaded
-        WebDriverWait(api.driver, TIMEOUT).until(
-                ec.presence_of_element_located(
-                    (By.CSS_SELECTOR, "platform-header.PFshowHeader")
-                    )
+    # Wait until the page is loaded
+    WebDriverWait(api.driver, TIMEOUT).until(
+            ec.presence_of_element_located(
+                (By.CSS_SELECTOR, "platform-header.PFshowHeader")
                 )
-        
-        time.sleep(5) # Unable to find a better item above to wait on, but the above still needs some of the page to load.
+            )
+    
+    time.sleep(5) # Unable to find a better item above to wait on, but the above still needs some of the page to load.
 
-        _LOGGER.info("Successfully logged in, getting cookies")
+    _LOGGER.info("Successfully logged in, getting cookies")
 
-        # Get authState parameter.  Copy all cookies from the session rather than looking for a specific one.
-        cookies = api.driver.get_cookies()
-        for cookie in cookies:
-            api.session.cookies.set(cookie['name'], cookie['value'])
+    # Get authState parameter.  Copy all cookies from the session rather than looking for a specific one.
+    cookies = api.driver.get_cookies()
+    for cookie in cookies:
+        api.session.cookies.set(cookie['name'], cookie['value'])
 
-        api.driver.close()
-        api.driver.quit()
+
+def get_ffe_cookies(api):
+     
+    if api.driver is None:
+        api.driver = webdriver.Chrome(ChromeDriverManager().install(), options=CHROME_OPTIONS)
+
+    api.driver.get(f"https://{FFE_DOMAIN}")
+
+    # Wait until the page is loaded
+    WebDriverWait(api.driver, TIMEOUT).until(
+            ec.presence_of_element_located(
+                (By.CSS_SELECTOR, "platform-header.PFshowHeader")
+                )
+            )
+    
+    time.sleep(5) # Unable to find a better item above to wait on, but the above still needs some of the page to load.
+
+    _LOGGER.info("getting ffe cookies")
+
+    # Get authState parameter.  Copy all cookies from the session rather than looking for a specific one.
+    cookies = api.driver.get_cookies()
+    for cookie in cookies:
+        api.session.cookies.set(cookie['name'], cookie['value'])
+

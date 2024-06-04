@@ -34,19 +34,32 @@ class API():
         self.host = BETA_HOST if beta else HOST
 
         if cookies is None:
-            from .selenium_login import login
+            from .selenium_login import login, get_ffe_cookies
             login(self, username, password)
+            get_ffe_cookies(self)
+
+            self.driver.close()
+            self.driver.quit()
         else:
             for cookie in cookies:
                 self.session.cookies.set(cookie['name'], cookie['value'])
 
-    def _make_request(self, request):
+    def _make_get_request(self, request):
         if self.beta:
             request['cookies'] = {'clerk-resources-beta-terms': '4.1',
                                   'clerk-resources-beta-eula': '4.2'}
 
         response = self.session.get(**request)
         response.raise_for_status()  # break on any non 200 status
+        return response
+    
+    def _make_post_request(self, request):
+        if self.beta:
+            request['cookies'] = {'clerk-resources-beta-terms': '4.1',
+                                  'clerk-resources-beta-eula': '4.2'}
+
+        response = self.session.post(**request)
+        response.raise_for_status()
         return response
 
     def birthday_list(self, month, months=1):
@@ -62,7 +75,7 @@ class API():
             }
         }
 
-        result = self._make_request(request)
+        result = self._make_get_request(request)
         return result.json()
 
     def members_moved_in(self, months):
@@ -76,7 +89,7 @@ class API():
             'params': {'lang': 'eng'}
         }
 
-        result = self._make_request(request)
+        result = self._make_get_request(request)
         return result.json()
 
 
@@ -91,7 +104,7 @@ class API():
             'params': {'lang': 'eng'}
         }
 
-        result = self._make_request(request)
+        result = self._make_get_request(request)
         return result.json()
 
 
@@ -105,7 +118,7 @@ class API():
             }
         }
 
-        result = self._make_request(request)
+        result = self._make_get_request(request)
         return result.json()
     
 
@@ -116,7 +129,7 @@ class API():
             'params': {'lang': 'eng'}
         }
 
-        result = self._make_request(request)
+        result = self._make_get_request(request)
         return result.json()
 
 
@@ -133,9 +146,9 @@ class API():
             }
         }
 
-        result = self._make_request(request)
+        result = self._make_get_request(request)
         scdn_url = result.json()['tokenUrl']
-        return self._make_request({'url': scdn_url}).content
+        return self._make_get_request({'url': scdn_url}).content
 
 
     def callings(self):
@@ -145,7 +158,7 @@ class API():
             'params': {'lang': 'eng'}
         }
 
-        result = self._make_request(request)
+        result = self._make_get_request(request)
         return result.json()
 
 
@@ -156,7 +169,7 @@ class API():
             'params': {'lang': 'eng'}
         }
 
-        result = self._make_request(request)
+        result = self._make_get_request(request)
         return result.json()
 
 
@@ -174,7 +187,7 @@ class API():
             }
         }
 
-        result = self._make_request(request)
+        result = self._make_get_request(request)
         return result.json()
 
 
@@ -188,7 +201,7 @@ class API():
             'params': {'lang': 'eng'}
         }
 
-        result = self._make_request(request)
+        result = self._make_get_request(request)
         return result.json()
 
 
@@ -204,7 +217,7 @@ class API():
                 'unitNumber': self.unit_number
             }
         }
-        result = self._make_request(request)
+        result = self._make_get_request(request)
         return result.json()
     
 
@@ -214,7 +227,7 @@ class API():
             'url': 'https://{}/api/cdol/details/unit/{}'.format(LCR_DOMAIN, unit_number),
             'params': {'lang': 'eng'}
         }
-        result = self._make_request(request)
+        result = self._make_get_request(request)
         return result.json()
     
 
@@ -223,7 +236,7 @@ class API():
         request = {
             'url': 'https://{}/api/accessible-units'.format(FFE_DOMAIN),
         }
-        result = self._make_request(request)
+        result = self._make_get_request(request)
         return result.json()
     
     
@@ -235,7 +248,7 @@ class API():
             'url': 'https://{}/api/graphql'.format(FFE_DOMAIN),
             'json': graphql_body
         }
-        result = self._make_request(request)
+        result = self._make_post_request(request)
         return result.json()
     
 
@@ -247,7 +260,7 @@ class API():
             'url': 'https://{}/api/graphql'.format(FFE_DOMAIN),
             'json': graphql_body
         }
-        result = self._make_request(request)
+        result = self._make_post_request(request)
         return result.json()
 
 
