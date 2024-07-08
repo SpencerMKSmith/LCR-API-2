@@ -35,14 +35,18 @@ class API():
 
         if cookies is None:
             from .selenium_login import login, get_ffe_cookies
-            login(self, username, password)
-            get_ffe_cookies(self)
+            self.cookies = login(self, username, password)
+            self.ffe_cookies = get_ffe_cookies(self)
 
             self.driver.close()
             self.driver.quit()
         else:
             for cookie in cookies:
                 self.session.cookies.set(cookie['name'], cookie['value'])
+
+    def apply_cookies(self, cookies):
+        for cookie in cookies:
+            self.session.cookies.set(cookie['name'], cookie['value'])
 
     def _make_get_request(self, request):
         if self.beta:
@@ -63,6 +67,7 @@ class API():
         return response
 
     def birthday_list(self, month, months=1):
+        self.apply_cookies(self.cookies)
         _LOGGER.info("Getting birthday list")
         request = {
             'url': 'https://{}/api/report/birthday-list'.format(
@@ -79,6 +84,7 @@ class API():
         return result.json()
 
     def members_moved_in(self, months):
+        self.apply_cookies(self.cookies)
         _LOGGER.info("Getting members moved in")
         request = {
             'url': 'https://{}/api/report/members-moved-in/unit/{}/{}'.format(
@@ -94,6 +100,7 @@ class API():
 
 
     def members_moved_out(self, months):
+        self.apply_cookies(self.cookies)
         _LOGGER.info("Getting members moved out")
         request = {
             'url': 'https://{}/api/report/members-moved-out/unit/{}/{}'.format(
@@ -109,6 +116,7 @@ class API():
 
 
     def member_list(self):
+        self.apply_cookies(self.cookies)
         _LOGGER.info("Getting member list")
         request = {
             'url': 'https://{}/api/umlu/report/member-list'.format(LCR_DOMAIN),
@@ -123,6 +131,7 @@ class API():
     
 
     def member_profile(self, member_id):
+        self.apply_cookies(self.cookies)
         _LOGGER.info("Getting member profile")
         request = {
             'url': 'https://{}/api/records/member-profile/service/{}'.format(LCR_DOMAIN, member_id),
@@ -137,6 +146,7 @@ class API():
         """
         member_id is not the same as Mrn
         """
+        self.apply_cookies(self.cookies)
         _LOGGER.info("Getting photo for {}".format(member_id))
         request = {
             'url': 'https://{}/api/avatar/{}/MEDIUM'.format(LCR_DOMAIN, member_id),
@@ -152,6 +162,7 @@ class API():
 
 
     def callings(self):
+        self.apply_cookies(self.cookies)
         _LOGGER.info("Getting callings for all organizations")
         request = {
             'url': 'https://{}/api/orgs/sub-orgs-with-callings'.format(LCR_DOMAIN),
@@ -163,6 +174,7 @@ class API():
 
 
     def members_with_callings_list(self):
+        self.apply_cookies(self.cookies)
         _LOGGER.info("Getting callings for all organizations")
         request = {
             'url': 'https://{}/api/report/members-with-callings'.format(LCR_DOMAIN),
@@ -177,6 +189,7 @@ class API():
         """
         API parameters known to be accepted are lang type unitNumber and quarter.
         """
+        self.apply_cookies(self.cookies)
         _LOGGER.info("Getting ministering data")
         request = {
             'url': 'https://{}/api/umlu/v1/ministering/data-full'.format(LCR_DOMAIN),
@@ -195,6 +208,7 @@ class API():
         """
         Once the users role id is known this table could be checked to selectively enable or disable methods for API endpoints.
         """
+        self.apply_cookies(self.cookies)
         _LOGGER.info("Getting info for data access")
         request = {
             'url': 'https://{}/api/access-table'.format(LCR_DOMAIN),
@@ -209,6 +223,7 @@ class API():
         """
         Obtain member information on recommend status
         """
+        self.apply_cookies(self.cookies)
         _LOGGER.info("Getting recommend status")
         request = {
             'url': 'https://{}/api/recommend/recommend-status'.format(LCR_DOMAIN),
@@ -222,6 +237,7 @@ class API():
     
 
     def unit_details(self, unit_number):
+        self.apply_cookies(self.cookies)
         _LOGGER.info("Getting unit details")
         request = {
             'url': 'https://{}/api/cdol/details/unit/{}'.format(LCR_DOMAIN, unit_number),
@@ -232,6 +248,7 @@ class API():
     
 
     def accessible_units(self):
+        self.apply_cookies(self.ffe_cookies)
         _LOGGER.info("Getting accessible units")
         request = {
             'url': 'https://{}/api/accessible-units'.format(FFE_DOMAIN),
@@ -241,6 +258,7 @@ class API():
     
     
     def financial_statement(self, internal_account_id, from_date, to_date):
+        self.apply_cookies(self.ffe_cookies)
         graphql_body = {"operationName":"internalTransactionDetailLinesByPostedDate","variables":{"criteria":{"internalAccountIds":[internal_account_id],"postedDateFrom":from_date,"postedDateTo":to_date,"adjustmentCodes":["ACTIVE"],"donationBatchCodes":["ACTIVE"]}},"query":"query internalTransactionDetailLinesByPostedDate($criteria: IntTransDetailLineCriteria!) {\n  internalTransactionDetailLinesByPostedDate(criteria: $criteria) {\n    id\n    postedDate\n    donationSlipLine {\n      id\n      slip {\n        id\n        amount\n        donor {\n          id\n          membershipId\n          names {\n            localUnitDisplayName\n            __typename\n          }\n          birthDate\n          __typename\n        }\n        donation {\n          id\n          date\n          __typename\n        }\n        __typename\n      }\n      __typename\n    }\n    internalAccount {\n      id\n      bus {\n        id\n        currency {\n          id\n          isoCode\n          __typename\n        }\n        __typename\n      }\n      org {\n        id\n        __typename\n      }\n      financialTransactionMethods {\n        id\n        financialTransactionMethod {\n          id\n          financialTransactionType\n          financialTransactionTypeId\n          transactionMethodDescriptionId\n          financialTransactionMethodFinancialInstruments {\n            id\n            financialInstrument {\n              id\n              type\n              typeId\n              __typename\n            }\n            __typename\n          }\n          __typename\n        }\n        __typename\n      }\n      __typename\n    }\n    category {\n      id\n      sortOrder\n      __typename\n    }\n    subcategory {\n      id\n      sortOrder\n      name\n      category {\n        id\n        sortOrder\n        name\n        __typename\n      }\n      __typename\n    }\n    unitSubcategory {\n      id\n      name\n      __typename\n    }\n    amount\n    donationBatch {\n      id\n      date\n      status\n      source\n      submittedBy\n      submittedDate\n      approvedRejectedBy\n      approvedRejectedDate\n      __typename\n    }\n    __typename\n  }\n}\n"}
 
         _LOGGER.info("Getting financial statement")
@@ -253,6 +271,7 @@ class API():
     
 
     def financial_participant_list(self, orgId):
+        self.apply_cookies(self.ffe_cookies)
         graphql_body = {"operationName":"participants","variables":{"criteria":{"orgIds":[orgId],"status":"ACTIVE"}},"query":"query participants($criteria: ParticipantCriteria!) {\n  participants(criteria: $criteria, maxResults: 10000) {\n    results {\n      id\n      birthDate\n      gender\n      membershipId\n      isMember\n      isDonor\n      isPayee\n      isRecipient\n      taxId\n      address {\n        composed\n        __typename\n      }\n      emailAddress\n      names {\n        localUnitDisplayName\n        __typename\n      }\n      org {\n        id\n        name\n        localName1\n        parent {\n          id\n          __typename\n        }\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n"}
 
         _LOGGER.info("Getting financial participant list")

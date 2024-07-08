@@ -59,11 +59,11 @@ def login(api, user, password):
 
     # Get authState parameter.  Copy all cookies from the session rather than looking for a specific one.
     cookies = api.driver.get_cookies()
-    for cookie in cookies:
-        api.session.cookies.set(cookie['name'], cookie['value'])
+    return cookies
 
 
 def get_ffe_cookies(api):
+    api.apply_cookies(api.cookies)
      
     if api.driver is None:
         api.driver = webdriver.Chrome(ChromeDriverManager().install(), options=CHROME_OPTIONS)
@@ -83,6 +83,5 @@ def get_ffe_cookies(api):
 
     # Get authState parameter.  Copy all cookies from the session rather than looking for a specific one.
     cookies = api.driver.get_cookies()
-    for cookie in cookies:
-        api.session.cookies.set(cookie['name'], cookie['value'])
+    return cookies
 
