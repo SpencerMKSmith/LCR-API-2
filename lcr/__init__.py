@@ -6,7 +6,6 @@ import logging
 import requests
 import time
 
-
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -58,18 +57,24 @@ class API():
                             )
                         )
         login_input.send_keys(user)
-        login_input.submit()
+
+        # Find the "Next" button and click it
+        next_button = self.driver.find_element(By.ID, "button-primary")
+        next_button.click()
 
         _LOGGER.info("Entering password")
 
-        # Enter password
+         # Enter password
         password_input = WebDriverWait(self.driver, TIMEOUT).until(
                 ec.presence_of_element_located(
-                    (By.CSS_SELECTOR, "input.password-with-toggle")
+                        (By.CSS_SELECTOR, "input#password-input")  # or input.eden-form-part-input__control
                     )
                 )
         password_input.send_keys(password)
-        password_input.submit()
+        
+        # Find the "Verify" button and click it
+        verify_password_button = self.driver.find_element(By.ID, "button-primary")
+        verify_password_button.click()
 
         # Wait until the page is loaded
         WebDriverWait(self.driver, TIMEOUT).until(
