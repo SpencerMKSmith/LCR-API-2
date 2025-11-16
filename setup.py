@@ -2,7 +2,7 @@
 import os
 from setuptools import setup, find_packages
 
-VERSION = 'v0.6.1'
+VERSION = 'v0.6.2'
 PACKAGE_NAME = 'lcr_api_2'
 HERE = os.path.abspath(os.path.dirname(__file__))
 DOWNLOAD_URL = ('https://github.com/SpencerMKSmith/LCR-API-2/archive/'

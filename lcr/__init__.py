@@ -7,17 +7,21 @@ import requests
 import time
 
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 from webdriver_manager.chrome import ChromeDriverManager
 
+CHROME_OPTIONS = webdriver.ChromeOptions()
+CHROME_OPTIONS.add_argument("--headless")
+CHROME_OPTIONS.add_argument("--no-sandbox")
+CHROME_OPTIONS.add_argument("--disable-dev-shm-usage")
+
 _LOGGER = logging.getLogger(__name__)
 HOST = "churchofjesuschrist.org"
 BETA_HOST = f"beta.{HOST}"
 LCR_DOMAIN = f"lcr.{HOST}"
-CHROME_OPTIONS = webdriver.chrome.options.Options()
-CHROME_OPTIONS.add_argument("--headless")
 TIMEOUT = 10
 
 if _LOGGER.getEffectiveLevel() <= logging.DEBUG:
@@ -29,18 +33,19 @@ class InvalidCredentialsError(Exception):
     pass
 
 
-class API():
-    def __init__(
-            self, username, password, unit_number, beta=False,
-            driver = webdriver.Chrome(ChromeDriverManager().install(), options=CHROME_OPTIONS)):
-        driver
+class API:
+    def __init__(self, username, password, unit_number, beta=False):
+        # create Chrome only when API is instantiated
+        service = Service(ChromeDriverManager().install())
+        self.driver = webdriver.Chrome(service=service, options=CHROME_OPTIONS)
+
         self.unit_number = unit_number
         self.session = requests.Session()
-        self.driver = driver
         self.beta = beta
         self.host = BETA_HOST if beta else HOST
 
         self._login(username, password)
+
 
     def _login(self, user, password):
         _LOGGER.info("Logging in")
@@ -236,3 +241,5 @@ class MemberData():
 
     def __iter__(self):
         return iter([self.legacyMemberId, self.fullName, self.sex, self.birthdate, self.callings, self.recommendStatus])
+
+new_lcr = API("spencermksmith", "6computers", 167371)
